@@ -1,0 +1,10 @@
+# 가상 환경 제외
+.venv/
+
+# IDE 설정 파일 제외
+.idea/
+__pycache__/
+*.pyc
+
+# 환경변수
+.env
