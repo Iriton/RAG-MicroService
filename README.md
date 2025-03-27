@@ -6,7 +6,7 @@
 
 ## 기술 스택
 
-- Python 3.10+
+- Python 3.11
 - Milvus (벡터 DB)
 - Kafka (비동기 메시지 브로커)
 - HuggingFace Transformers (BGE-M3 모델)
