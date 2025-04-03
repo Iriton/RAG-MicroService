@@ -16,7 +16,7 @@ class MilvusHybridSearcher:
             raise Exception(f"Milvus 컬렉션 '{self.collection_name}'을 찾을 수 없습니다.")
 
         # BM25 (sparse), Dense 임베딩 혼합 → Weighted Ranker 사용
-        self.ranker = WeightedRanker(0.3, 0.7)  # sparse 0.7, dense 0.3 가중치
+        self.ranker = WeightedRanker(0.3, 0.7)  # sparse 0.3, dense 0.7 가중치
 
     def hybrid_search(self, query_text: str, embedding_model: BGEM3FlagModel):
         # Dense 임베딩 생성

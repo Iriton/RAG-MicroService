@@ -1,7 +1,7 @@
 # infrastructure/kafka/consumer_config.py
 
 from kafka import KafkaConsumer
-from infrastructure.config import get_env
+from app.infrastructure.config import get_env
 
 def create_consumer(topic: str) -> KafkaConsumer:
     return KafkaConsumer(
@@ -9,6 +9,5 @@ def create_consumer(topic: str) -> KafkaConsumer:
         bootstrap_servers=get_env("KAFKA_BOOTSTRAP_SERVERS"),
         auto_offset_reset='earliest',
         enable_auto_commit=True,
-        group_id=get_env("KAFKA_GROUP_ID"),
         value_deserializer=lambda m: m.decode('utf-8')
     )

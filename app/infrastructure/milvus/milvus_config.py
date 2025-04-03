@@ -1,7 +1,7 @@
 # infrastructure/milvus/milvus_config.py
 
 from pymilvus import MilvusClient
-from infrastructure.config import get_env
+from app.infrastructure.config import get_env
 
 def get_milvus_client() -> MilvusClient:
     return MilvusClient(
