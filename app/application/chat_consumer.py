@@ -1,6 +1,5 @@
 # application/chat_consumer.py
 
-import json
 from app.application.rag_service import RAGService
 from app.infrastructure.kafka.producer import KafkaScoreProducer
 
@@ -20,17 +19,17 @@ class ChatMessageConsumer:
         Kafka에서 받은 raw JSON 메시지를 처리
         """
         try:
-            user_id = msg["user_id"]
-            status = msg.get("status", "active")
-            text = msg["message"]
+            memberId = msg["memberId"]
+            type = msg.get("type", "chat")
+            message = msg["message"]
             timestamp = msg.get("timestamp")
 
-            if status == "active":
-                self.rag_service.process_active_message(user_id, text)
+            if type == "chat":
+                self.rag_service.process_active_message(memberId, message)
 
-            elif status == "done":
-                final_scores = self.rag_service.process_done_message(user_id)
-                self.producer.send_final_scores(user_id, final_scores, timestamp)
+            elif type == "done":
+                final_scores = self.rag_service.process_done_message(memberId)
+                self.producer.send_final_scores(memberId, final_scores, timestamp)
 
         except Exception as e:
             print(f"[Consumer Error] 메시지 처리 중 오류 발생: {e}")

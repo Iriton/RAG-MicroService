@@ -11,42 +11,42 @@ class SessionManager:
     """
     def __init__(self):
         self.session_scores: Dict[str, List[Dict]] = defaultdict(list)  # 사용자별 점수 누적
-        self.user_sessions: Dict[str, str] = {}  # 사용자별 세션 관리
+        self.member_sessions: Dict[str, str] = {}  # 사용자별 세션 관리
         self.calculator = ScoreCalculator()
 
-    def get_or_create_session(self, user_id: str) -> str:
+    def get_or_create_session(self, memberId: str) -> str:
         """
         사용자별로 세션을 새로 생성하거나 기존 세션을 반환
-        - user_id별로 고유한 session_id를 할당
+        - memberId별로 고유한 sessionId를 할당
         """
-        if user_id not in self.user_sessions:
+        if memberId not in self.member_sessions:
             # 고유한 세션 ID 생성
-            session_id = str(uuid.uuid4())
-            self.user_sessions[user_id] = session_id
+            sessionId = str(uuid.uuid4())
+            self.member_sessions[memberId] = sessionId
         else:
-            session_id = self.user_sessions[user_id]
-        return session_id
+            sessionId = self.member_sessions[memberId]
+        return sessionId
 
-    def add_score(self, user_id: str, score_entry: Dict):
+    def add_score(self, memberId: str, score_entry: Dict):
         """
         사용자별로 점수 항목을 누적
         """
-        session_id = self.get_or_create_session(user_id)
-        self.session_scores[session_id].append(score_entry)
+        sessionId = self.get_or_create_session(memberId)
+        self.session_scores[sessionId].append(score_entry)
 
-    def calculate_final_scores(self, user_id: str) -> Dict[str, float]:
+    def calculate_final_scores(self, memberId: str) -> Dict[str, float]:
         """
-        해당 user_id의 세션 점수를 평균 내어 반환 후, 세션 정보 초기화
+        해당 memberId의 세션 점수를 평균 내어 반환 후, 세션 정보 초기화
         """
-        session_id = self.user_sessions.get(user_id)
-        if not session_id or session_id not in self.session_scores:
+        sessionId = self.member_sessions.get(memberId)
+        if not sessionId or sessionId not in self.session_scores:
             return {}
 
-        scores = self.session_scores[session_id]
+        scores = self.session_scores[sessionId]
         final_result = self.calculator.calculate_average(scores)
 
         # 세션 데이터 초기화
-        del self.session_scores[session_id]
-        del self.user_sessions[user_id]
+        del self.session_scores[sessionId]
+        del self.member_sessions[memberId]
 
         return final_result
