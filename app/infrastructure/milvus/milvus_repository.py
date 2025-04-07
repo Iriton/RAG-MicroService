@@ -2,7 +2,7 @@
 
 import os
 from pymilvus import MilvusClient, AnnSearchRequest, WeightedRanker
-from domain.embedding_model import BGEM3FlagModel
+from app.domain.embedding_model import BGEM3FlagModel
 
 
 class MilvusHybridSearcher:
