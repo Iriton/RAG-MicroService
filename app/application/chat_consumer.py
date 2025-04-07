@@ -21,10 +21,10 @@ class ChatMessageConsumer:
         try:
             memberId = msg["memberId"]
             type = msg.get("type", "chat")
-            message = msg["message"]
             timestamp = msg.get("timestamp")
 
             if type == "chat":
+                message = msg["message"]
                 self.rag_service.process_active_message(memberId, message)
 
             elif type == "done":

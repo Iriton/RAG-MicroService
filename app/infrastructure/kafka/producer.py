@@ -16,7 +16,6 @@ class KafkaScoreProducer:
         message = {
             "memberId": memberId,
             "scores": scores,
-            "status": "done",
             "timestamp": timestamp
         }
 
