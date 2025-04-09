@@ -23,7 +23,7 @@ class SessionManager:
             # 고유한 세션 ID 생성
             sessionId = memberId
             self.member_sessions[memberId] = sessionId
-            print(f"[세션 생성] memberId={memberId}, sessionId={sessionId}")
+            print(f"[세션 생성] memberId={memberId}")
         else:
             sessionId = self.member_sessions[memberId]
         return sessionId
@@ -51,6 +51,6 @@ class SessionManager:
         del self.session_scores[sessionId]
         del self.member_sessions[memberId]
 
-        print(f"[세션 종료] memberId={memberId}, sessionId={sessionId}, 최종 점수: {final_result}")
+        print(f"[세션 종료] memberId={memberId}, 최종 점수: {final_result}")
 
         return final_result
