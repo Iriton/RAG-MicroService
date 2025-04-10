@@ -33,7 +33,6 @@ class ChatMessageConsumer:
             # 최초 세션 연결 로그
             if memberId not in self.connected_sessions:
                 self.connected_sessions.add(memberId)
-                logger.info(f"[세션 생성] memberId={memberId}")
                 logger.info(f"[Kafka] 세션 연결: memberId={memberId}")
 
             if msg_type == "chat":
@@ -44,7 +43,6 @@ class ChatMessageConsumer:
             elif msg_type == "done":
                 final_scores = self.rag_service.process_done_message(memberId)
                 self.producer.send_final_scores(memberId, final_scores, timestamp)
-                logger.info(f"[세션 종료] memberId={memberId}, 최종 점수: {final_scores}")
 
             else:
                 logger.warning(f"[Consumer Warning] 알 수 없는 메시지 타입: {msg_type}, memberId={memberId}")

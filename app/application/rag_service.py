@@ -17,8 +17,6 @@ class RAGService:
         실시간 처리 흐름:
         - 임베딩 생성 → 하이브리드 검색 → 점수 정규화 및 요인 추출 → 세션에 저장
         """
-        sessionId = self.session_manager.get_or_create_session(memberId)
-        print(f"[Kafka] 세션 연결: memberId={memberId}")
 
         search_results = self.milvus.hybrid_search(text, self.embedding_model)
 

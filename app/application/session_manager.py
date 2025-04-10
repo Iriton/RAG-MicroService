@@ -1,9 +1,11 @@
 # application/session_manager.py
 
+import logging
 from collections import defaultdict
 from typing import Dict, List
 from app.domain.score_calculator import ScoreCalculator
-import uuid
+
+logger = logging.getLogger(__name__)
 
 class SessionManager:
     """
@@ -23,7 +25,7 @@ class SessionManager:
             # 고유한 세션 ID 생성
             sessionId = memberId
             self.member_sessions[memberId] = sessionId
-            print(f"[세션 생성] memberId={memberId}")
+            logger.info(f"[세션 생성] memberId={memberId}")
         else:
             sessionId = self.member_sessions[memberId]
         return sessionId
@@ -41,7 +43,7 @@ class SessionManager:
         """
         sessionId = self.member_sessions.get(memberId)
         if not sessionId or sessionId not in self.session_scores:
-            print(f"[세션 종료 실패] memberId={memberId} → 세션 정보 없음")
+            logger.warning(f"[세션 종료 실패] memberId={memberId} → 세션 정보 없음")
             return {}
 
         scores = self.session_scores[sessionId]
@@ -51,6 +53,5 @@ class SessionManager:
         del self.session_scores[sessionId]
         del self.member_sessions[memberId]
 
-        print(f"[세션 종료] memberId={memberId}, 최종 점수: {final_result}")
-
+        logger.info(f"[세션 종료] memberId={memberId}, 최종 점수: {final_result}")
         return final_result
