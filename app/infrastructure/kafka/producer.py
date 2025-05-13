@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class KafkaScoreProducer:
     def __init__(self):
-        self.topic = get_env("KAFKA_OUTPUT_TOPIC")
+        self.topic = get_env("KAFKA_BIG5_TOPIC")
         self.producer = KafkaProducer(
             bootstrap_servers=get_env("KAFKA_BOOTSTRAP_SERVERS"),
             value_serializer=lambda v: json.dumps(v).encode("utf-8")

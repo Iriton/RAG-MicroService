@@ -49,4 +49,4 @@ with concurrent.futures.ThreadPoolExecutor() as executor:
 # 버퍼 비우기 & 연결 닫기
 producer.flush()
 producer.close()
-print("✅ Producer 종료")
+print("Producer 종료")
