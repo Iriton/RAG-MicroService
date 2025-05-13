@@ -4,35 +4,40 @@ from app.application.session_manager import SessionManager
 from app.domain.embedding_model import BGEM3FlagModel
 from app.domain.score_calculator import ScoreCalculator
 from app.infrastructure.milvus.milvus_repository import MilvusHybridSearcher
+import logging
+
+logger = logging.getLogger(__name__)
 
 class RAGService:
-    def __init__(self):
-        self.session_manager = SessionManager()
+    def __init__(self, session_manager=None):
+        self.session_manager = session_manager or SessionManager()
         self.embedding_model = BGEM3FlagModel("BAAI/bge-m3")
         self.milvus = MilvusHybridSearcher()
         self.calculator = ScoreCalculator()
 
     def process_active_message(self, memberId: str, text: str):
-        """
-        실시간 처리 흐름:
-        - 임베딩 생성 → 하이브리드 검색 → 점수 정규화 및 요인 추출 → 세션에 저장
-        """
-
         search_results = self.milvus.hybrid_search(text, self.embedding_model)
+        logger.info(f"[RAG] 검색 결과 {len(search_results)}개, 입력: {text}")
+        logger.info(f"[DEBUG] SessionManager 인스턴스 ID: {id(self)}")
 
         for hit in search_results:
             entity = hit.get("entity", {})
-            similarity = 1 - hit.get("distance", 1.0)  # L2 distance → 유사도 환산
+            similarity = 1 - hit.get("distance", 1.0)
             factor = entity.get("factor")
-            evaluation = entity.get("evaluation")  # 긍정/부정
+            evaluation = entity.get("evaluation")
 
             if factor:
                 score_entry = self.calculator.calculate_single_score(factor, similarity, evaluation)
+                logger.info(f"[RAG] score_entry 추가: {score_entry}")
                 self.session_manager.add_score(memberId, score_entry)
+            else:
+                logger.warning(f"[RAG] factor 누락 - 무시됨: {entity}")
+
 
     def process_done_message(self, memberId: str) -> dict:
         """
         세션 종료: 누적 점수 → 평균 점수 계산
         """
+        logger.info(f"[DEBUG] [DONE] SessionManager 인스턴스 ID: {id(self.session_manager)}")
         final_scores = self.session_manager.calculate_final_scores(memberId)
         return final_scores

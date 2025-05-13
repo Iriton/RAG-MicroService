@@ -1,18 +1,15 @@
+# application/chat_input_consumer.py
+
 import logging
 from app.application.rag_service import RAGService
 from app.infrastructure.kafka.producer import KafkaScoreProducer
 
 logger = logging.getLogger(__name__)
 
-class ChatMessageConsumer:
-    """
-    Kafka 'chat_output' 토픽에서 메시지를 처리
-    - type == "done"일 때 Big5 계산 트리거
-    - type 없으면 무시 (LLM 챗봇 응답)
-    """
-    def __init__(self):
-        self.rag_service = RAGService()
-        self.producer = KafkaScoreProducer()
+class ChatOutputConsumer:
+    def __init__(self, rag_service: RAGService, producer: KafkaScoreProducer):
+        self.rag_service = rag_service
+        self.producer = producer
 
     def handle_message(self, msg: dict):
         try:

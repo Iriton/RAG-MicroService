@@ -1,15 +1,13 @@
+# application/chat_input_consumer.py
+
 import logging
 from app.application.rag_service import RAGService
 
 logger = logging.getLogger(__name__)
 
-class ChatMessageConsumer:
-    """
-    Kafka 'chat_input' 토픽에서 사용자 입력 처리
-    - type이 "chat"일 경우 Big5 분석용 문장 누적
-    """
-    def __init__(self):
-        self.rag_service = RAGService()
+class ChatInputConsumer:
+    def __init__(self, rag_service: RAGService):
+        self.rag_service = rag_service
         self.connected_sessions = set()
 
     def handle_message(self, msg: dict):

@@ -3,72 +3,72 @@
 import logging
 import time
 import json
-import threading
 from kafka import KafkaConsumer
-from app.application.chat_input_consumer import ChatMessageConsumer as InputHandler
-from app.application.chat_output_consumer import ChatMessageConsumer as OutputHandler
+
+from app.application.chat_input_consumer import ChatInputConsumer
+from app.application.chat_output_consumer import ChatOutputConsumer
+from app.application.session_manager import SessionManager
+from app.application.rag_service import RAGService
+from app.infrastructure.kafka.producer import KafkaScoreProducer
 from app.infrastructure.config import get_env
 
-# 전역 로거 설정
+# 로깅 설정
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 def safe_json_loads(v):
-    if v:
-        try:
-            return json.loads(v.decode("utf-8"))
-        except json.JSONDecodeError as e:
-            logger.error(f"[Kafka] JSON 디코딩 실패: {e}")
-            return None
-    return None
-
-def create_consumer(topic: str, bootstrap_servers: str) -> KafkaConsumer:
-    return KafkaConsumer(
-        topic,
-        bootstrap_servers=bootstrap_servers,
-        group_id=get_env("KAFKA_GROUP_ID"),
-        auto_offset_reset="earliest",
-        value_deserializer=lambda v: safe_json_loads(v)
-    )
-
-def consume_messages(consumer: KafkaConsumer, handler, topic_name: str):
-    logger.info(f"[Kafka] '{topic_name}' Consumer 대기 중...")
-
-    for message in consumer:
-        start_time = time.time()
-        msg = message.value
-
-        if not msg:
-            logger.warning(f"[Kafka] 빈 메시지 수신 (partition={message.partition}, offset={message.offset})")
-            continue
-
-        handler.handle_message(msg)
-
-        member_id = msg.get("memberId", "unknown")
-        duration = time.time() - start_time
-        logger.info(f"[{topic_name}] 세션 {member_id} 처리 시간: {duration:.4f}초")
+    try:
+        return json.loads(v.decode("utf-8"))
+    except Exception as e:
+        logger.error(f"[Kafka] JSON 파싱 실패: {e}")
+        return None
 
 def main():
+    # 환경 변수에서 설정 값 가져오기
+    topics = [get_env("KAFKA_INPUT_TOPIC"), get_env("KAFKA_OUTPUT_TOPIC")]
     bootstrap_servers = get_env("KAFKA_BOOTSTRAP_SERVERS")
+    group_id = get_env("KAFKA_GROUP_ID")
 
-    # chat_input consumer
-    input_topic = get_env("KAFKA_INPUT_TOPIC")
-    input_consumer = create_consumer(input_topic, bootstrap_servers)
-    input_handler = InputHandler()
-    input_thread = threading.Thread(target=consume_messages, args=(input_consumer, input_handler, input_topic))
+    # KafkaConsumer 초기화
+    consumer = KafkaConsumer(
+        *topics,
+        bootstrap_servers=bootstrap_servers,
+        group_id=group_id,
+        auto_offset_reset="earliest",
+        value_deserializer=safe_json_loads
+    )
 
-    # chat_output consumer
-    output_topic = get_env("KAFKA_OUTPUT_TOPIC")
-    output_consumer = create_consumer(output_topic, bootstrap_servers)
-    output_handler = OutputHandler()
-    output_thread = threading.Thread(target=consume_messages, args=(output_consumer, output_handler, output_topic))
+    # 공용 인스턴스 생성
+    shared_session_manager = SessionManager()
+    shared_rag_service = RAGService(shared_session_manager)
+    shared_producer = KafkaScoreProducer()
 
-    # 실행
-    input_thread.start()
-    output_thread.start()
+    # Consumer 핸들러 인스턴스 초기화 (공용 인스턴스 주입)
+    input_handler = ChatInputConsumer(shared_rag_service)
+    output_handler = ChatOutputConsumer(shared_rag_service, shared_producer)
 
-    input_thread.join()
-    output_thread.join()
+    logger.info(f"[Kafka] topics 구독 시작: {topics}")
+
+    # 메시지 루프
+    for message in consumer:
+        topic = message.topic
+        msg = message.value
+        member_id = msg.get("memberId", "unknown")
+        start_time = time.time()
+
+        if not msg:
+            logger.warning(f"[Kafka] 빈 메시지: {message}")
+            continue
+
+        if topic == get_env("KAFKA_INPUT_TOPIC"):
+            input_handler.handle_message(msg)
+        elif topic == get_env("KAFKA_OUTPUT_TOPIC"):
+            output_handler.handle_message(msg)
+        else:
+            logger.warning(f"[Kafka] 알 수 없는 토픽: {topic}")
+
+        duration = time.time() - start_time
+        logger.info(f"[{topic}] 세션 {member_id} 처리 시간: {duration:.4f}초")
 
 if __name__ == "__main__":
     main()
