@@ -6,7 +6,7 @@ from app.infrastructure.kafka.producer import KafkaScoreProducer
 
 logger = logging.getLogger(__name__)
 
-class ChatOutputMessageConsumer:
+class ChatMessageConsumer:
     """
     Kafka 'chat_output' 토픽에서 메시지를 처리
     - type == "done"일 때만 Big5 계산 트리거
