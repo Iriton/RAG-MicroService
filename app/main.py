@@ -68,7 +68,6 @@ def main():
             logger.warning(f"[Kafka] 알 수 없는 토픽: {topic}")
 
         duration = time.time() - start_time
-        logger.info(f"[{topic}] 세션 {member_id} 처리 시간: {duration:.4f}초")
 
 if __name__ == "__main__":
     main()

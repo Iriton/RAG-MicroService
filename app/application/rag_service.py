@@ -18,7 +18,6 @@ class RAGService:
     def process_active_message(self, memberId: str, text: str):
         search_results = self.milvus.hybrid_search(text, self.embedding_model)
         logger.info(f"[RAG] 검색 결과 {len(search_results)}개, 입력: {text}")
-        logger.info(f"[DEBUG] SessionManager 인스턴스 ID: {id(self)}")
 
         for hit in search_results:
             entity = hit.get("entity", {})
@@ -38,6 +37,5 @@ class RAGService:
         """
         세션 종료: 누적 점수 → 평균 점수 계산
         """
-        logger.info(f"[DEBUG] [DONE] SessionManager 인스턴스 ID: {id(self.session_manager)}")
         final_scores = self.session_manager.calculate_final_scores(memberId)
         return final_scores

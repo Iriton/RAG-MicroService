@@ -25,7 +25,7 @@ class SessionManager:
             # 고유한 세션 ID 생성
             sessionId = memberId
             self.member_sessions[memberId] = sessionId
-            logger.info(f"[세션 생성] memberId={memberId}")
+            logger.info(f"[Session] memberId={memberId} 세션 생성")
         else:
             sessionId = self.member_sessions[memberId]
         return sessionId
@@ -43,7 +43,7 @@ class SessionManager:
         """
         sessionId = self.member_sessions.get(memberId)
         if not sessionId or sessionId not in self.session_scores:
-            logger.warning(f"[세션 종료 실패] memberId={memberId} → 세션 정보 없음")
+            logger.warning(f"[Session] memberId={memberId} → 세션 정보 없음")
             return {}
 
         scores = self.session_scores[sessionId]
@@ -53,5 +53,5 @@ class SessionManager:
         del self.session_scores[sessionId]
         del self.member_sessions[memberId]
 
-        logger.info(f"[세션 종료] memberId={memberId}, 최종 점수: {final_result}")
+        logger.info(f"[Session] memberId={memberId} 세션 종료, 최종 점수: {final_result}")
         return final_result

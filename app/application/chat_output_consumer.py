@@ -22,7 +22,6 @@ class ChatOutputConsumer:
                 return
 
             if msg_type == "done":
-                logger.info(f"[ChatOutput] 'done' 수신: memberId={member_id}")
                 final_scores = self.rag_service.process_done_message(member_id)
                 self.producer.send_final_scores(member_id, final_scores, timestamp)
                 logger.info(f"[ChatOutput] Big5 계산 및 전송 완료: memberId={member_id}")
