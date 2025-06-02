@@ -32,6 +32,20 @@ class RAGService:
             else:
                 logger.warning(f"[RAG] factor 누락 - 무시됨: {entity}")
 
+    def process_partial_score_request(self, memberId: str) -> dict:
+        """
+        중간 점수 요청 처리
+        - 현재 세션에서 평균 점수를 반환
+        """
+        sessionId = self.session_manager.member_sessions.get(memberId)
+        if not sessionId or sessionId not in self.session_manager.session_scores:
+            logger.warning(f"[RAGService] 중간 점수 요청 - 세션 없음: memberId={memberId}")
+            return {}
+
+        scores = self.session_manager.session_scores[sessionId]
+        partial_scores = self.session_manager.calculator.calculate_average(scores)
+        logger.info(f"[RAGService] 중간 점수 계산 완료: memberId={memberId}, scores={partial_scores}")
+        return partial_scores
 
     def process_done_message(self, memberId: str) -> dict:
         """

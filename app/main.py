@@ -6,7 +6,7 @@ import json
 from kafka import KafkaConsumer
 
 from app.application.chat_input_consumer import ChatInputConsumer
-from app.application.chat_output_consumer import ChatOutputConsumer
+from app.application.chat_score_consumer import ChatScoreConsumer
 from app.application.session_manager import SessionManager
 from app.application.rag_service import RAGService
 from app.infrastructure.kafka.producer import KafkaScoreProducer
@@ -25,7 +25,7 @@ def safe_json_loads(v):
 
 def main():
     # 환경 변수에서 설정 값 가져오기
-    topics = [get_env("KAFKA_INPUT_TOPIC"), get_env("KAFKA_OUTPUT_TOPIC")]
+    topics = [get_env("KAFKA_INPUT_TOPIC"), get_env("KAFKA_SCORE_TOPIC")]
     bootstrap_servers = get_env("KAFKA_BOOTSTRAP_SERVERS")
     group_id = get_env("KAFKA_GROUP_ID")
 
@@ -45,7 +45,7 @@ def main():
 
     # Consumer 핸들러 인스턴스 초기화 (공용 인스턴스 주입)
     input_handler = ChatInputConsumer(shared_rag_service)
-    output_handler = ChatOutputConsumer(shared_rag_service, shared_producer)
+    score_handler = ChatScoreConsumer(shared_rag_service, shared_producer)
 
     logger.info(f"[Kafka] topics 구독 시작: {topics}")
 
@@ -62,8 +62,8 @@ def main():
 
         if topic == get_env("KAFKA_INPUT_TOPIC"):
             input_handler.handle_message(msg)
-        elif topic == get_env("KAFKA_OUTPUT_TOPIC"):
-            output_handler.handle_message(msg)
+        elif topic == get_env("KAFKA_SCORE_TOPIC"):
+            score_handler.handle_message(msg)
         else:
             logger.warning(f"[Kafka] 알 수 없는 토픽: {topic}")
 
